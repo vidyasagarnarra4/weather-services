@@ -32,3 +32,4 @@ function displayWeather(data) {
     `;
     document.getElementById('weather-info').innerHTML = weatherInfo;
 }
+

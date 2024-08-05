@@ -1,27 +1,16 @@
 const express = require("express");
 const path = require("path");
-const cors = require('cors'); 
+const cors = require('cors');
 const axios = require("axios");
 const app = express();
 
 app.use(express.json());
 app.use(cors()); 
 
-const openweather_api_key = "2b3e4489ced48cc3e85a02db1d626eb6"; 
-const openweather_url = "http://api.openweathermap.org/data/2.5/weather";
+const PORT = process.env.PORT || 3000;
 
-const initializeServer = async () => {
-  try {
-    app.listen(3000, () => {
-      console.log("Server is running at http://localhost:3000");
-    });
-  } catch (error) {
-    console.log(`Server Error: ${error.message}`);
-    process.exit(1);
-  }
-};
-
-initializeServer();
+const openweather_api_key = "2b3e4489ced48cc3e85a02db1d626eb6";
+const openweather_url = "https://api.openweathermap.org/data/2.5/weather";
 
 const formatWeatherResponse = (data) => {
   return {
@@ -33,11 +22,11 @@ const formatWeatherResponse = (data) => {
   };
 };
 
-app.get("/weather", async (request, response) => {
-  const { city } = request.query;
+app.get("/weather", async (req, res) => {
+  const { city } = req.query;
 
   if (!city) {
-    response.status(400).send("City parameter is required");
+    res.status(400).send("City parameter is required");
     return;
   }
 
@@ -52,13 +41,13 @@ app.get("/weather", async (request, response) => {
     const weatherData = weatherResponse.data;
 
     if (weatherData.cod && weatherData.cod !== 200) {
-      response.status(404).send(weatherData.message);
+      res.status(404).send(weatherData.message);
     } else {
       const formattedWeatherData = formatWeatherResponse(weatherData);
-      response.send(formattedWeatherData);
+      res.json(formattedWeatherData);
     }
   } catch (error) {
-    response.status(500).send("Error fetching weather data");
+    res.status(500).send("Error fetching weather data");
   }
 });
 
@@ -70,5 +59,10 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+app.listen(PORT, () => {
+  console.log(`Server is running at http://localhost:${PORT}`);
+});
+
 module.exports = app;
+
 
