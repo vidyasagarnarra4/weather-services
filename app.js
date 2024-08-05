@@ -1,30 +1,43 @@
-const express = require('express');
-const path = require('path');
+const express = require("express");
+const path = require("path");
+const cors = require('cors'); 
+const axios = require("axios");
 const app = express();
-const axios = require('axios');
 
-app.use(express.static(path.join(__dirname)));
+app.use(express.json());
+app.use(cors()); 
 
-const openweather_api_key = '2b3e4489ced48cc3e85a02db1d626eb6';
-const openweather_url = 'http://api.openweathermap.org/data/2.5/weather';
+const openweather_api_key = "2b3e4489ced48cc3e85a02db1d626eb6"; 
+const openweather_url = "http://api.openweathermap.org/data/2.5/weather";
 
+const initializeServer = async () => {
+  try {
+    app.listen(3000, () => {
+      console.log("Server is running at http://localhost:3000");
+    });
+  } catch (error) {
+    console.log(`Server Error: ${error.message}`);
+    process.exit(1);
+  }
+};
+
+initializeServer();
 
 const formatWeatherResponse = (data) => {
   return {
     location: data.name,
     temperature: (data.main.temp - 273.15).toFixed(2), 
-    weather_descriptions: data.weather.map(w => w.description).join(', '),
+    weather_descriptions: data.weather.map(w => w.description).join(", "),
     humidity: data.main.humidity,
     wind_speed: data.wind.speed,
   };
 };
 
-
-app.get('/weather', async (request, response) => {
+app.get("/weather", async (request, response) => {
   const { city } = request.query;
 
   if (!city) {
-    response.status(400).send('City parameter is required');
+    response.status(400).send("City parameter is required");
     return;
   }
 
@@ -45,27 +58,17 @@ app.get('/weather', async (request, response) => {
       response.send(formattedWeatherData);
     }
   } catch (error) {
-    response.status(500).send('Error fetching weather data');
+    response.status(500).send("Error fetching weather data");
   }
 });
 
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html')); 
+app.use(express.static(path.join(__dirname)));
+
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Start server
-const initializeServer = async () => {
-  try {
-    app.listen(3000, () => {
-      console.log('Server is running at http://localhost:3000');
-    });
-  } catch (error) {
-    console.log(`Server Error: ${error.message}`);
-    process.exit(1);
-  }
-};
-
-initializeServer();
-
+module.exports = app;
 
